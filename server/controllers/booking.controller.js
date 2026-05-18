@@ -3,6 +3,7 @@ import { protect,admin } from "../middlewares/auth.js"
 import OTP from "../models/OTP.js";
 import User from "../models/User.js";
 import emailService from "../utils/email.js"
+import Event from "../models/Event.js";
 
 const generateOtp=()=>{
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -24,7 +25,14 @@ export const sendBookingOtp=async(req,res)=>{
 export const bookevent = async (req, res) => {
   try {
 
-    const { event_id, otp } = req.body;
+    const { eventId, event_id, otp } = req.body;
+    const selectedEventId = eventId || event_id;
+
+    if (!selectedEventId) {
+      return res.status(400).json({
+        message: 'Event id is required'
+      });
+    }
 
     const validOtp = await OTP.findOne({
       email: req.user.email,
@@ -38,7 +46,7 @@ export const bookevent = async (req, res) => {
       });
     }
 
-    const event = await Event.findById(event_id);
+    const event = await Event.findById(selectedEventId);
 
     if (!event) {
       return res.status(400).json({
@@ -54,7 +62,7 @@ export const bookevent = async (req, res) => {
 
     const existingBooking = await Booking.findOne({
       userId: req.user.id,
-      eventId: event_id
+      eventId: selectedEventId
     });
 
     if (
@@ -68,7 +76,7 @@ export const bookevent = async (req, res) => {
 
     const booking = await Booking.create({
       userId: req.user.id,
-      eventId: event_id,
+      eventId: selectedEventId,
       status: 'pending',
       paymentStatus: 'not_paid',
       amount: event.ticketPrice
