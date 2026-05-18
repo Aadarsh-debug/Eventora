@@ -13,7 +13,7 @@ export const sendBookingOtp=async(req,res)=>{
   try {
 
   const otp=generateOtp();
-  await OTP.findOneAndDelete({email:req.user.email,otp,action:"event_booking"});
+  await OTP.deleteMany({email:req.user.email,action:"event_booking"});
   await OTP.create({email: req.user.email, otp, action: 'event_booking'})
   await emailService.sendOtpEmail(req.user.email,otp,'event_booking')
   res.json({ message: 'OTP sent successfully'})

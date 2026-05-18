@@ -60,7 +60,8 @@ export const loginUser=async(req,res)=>{
 
   
 } catch (error) {
-  console.log("error in login",error);  
+  console.log("error in login",error);
+  res.status(500).json({message:"Login failed",error:error.message});
 }
 }
 
@@ -82,6 +83,7 @@ try {
   })
  
 } catch (error) {
-  console.log("error in verifyOtp",error); 
+  console.log("error in verifyOtp",error);
+  res.status(500).json({message:"OTP verification failed",error:error.message});
 }
 }
