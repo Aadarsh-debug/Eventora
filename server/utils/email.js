@@ -2,40 +2,13 @@ import nodemailer from "nodemailer"
 import dotenv from "dotenv"
 dotenv.config()
 
-const createTransporter = ({ port, secure }) => nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port,
-  secure,
-  requireTLS: !secure,
+const transporter= nodemailer.createTransport({
+  service:"gmail",
   auth:{
     user:process.env.EMAIL_USER,
     pass:process.env.EMAIL_PASS
-  },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000
-});
-
-const sendMail = async (mailOptions) => {
-  const primaryPort = Number(process.env.EMAIL_PORT) || 587;
-  const primarySecure = process.env.EMAIL_SECURE === "true" || primaryPort === 465;
-  const fallbackPort = primaryPort === 465 ? 587 : 465;
-  const fallbackSecure = fallbackPort === 465;
-
-  try {
-    return await createTransporter({
-      port: primaryPort,
-      secure: primarySecure
-    }).sendMail(mailOptions);
-  } catch (error) {
-    console.error(`Primary SMTP send failed on port ${primaryPort}:`, error.message);
-
-    return await createTransporter({
-      port: fallbackPort,
-      secure: fallbackSecure
-    }).sendMail(mailOptions);
   }
-};
+});
 
 const sendBookingEmail=async(userEmail,userName,eventTitle)=>{
 try {
@@ -47,11 +20,10 @@ try {
         <p>Your booking for the event <strong>${eventTitle}</strong> is successfully confirmed.</p>
         <p>Thank you for choosing Eventora.</p>`
   };
-  await sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
   console.log('Email sent successfully to', userEmail);
 } catch (error) {
    console.error('Error sending email:', error);
-   throw error;
 }
 };
 
@@ -76,11 +48,10 @@ const sendOtpEmail=async(userEmail,otp,type)=>{
                 </div>
             `
     };
-    await sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
     console.log(`OTP sent to ${userEmail} for ${type}`);
   } catch (error) {
     console.error('Error sending email:', error);
-    throw error;
   }
 }
 
